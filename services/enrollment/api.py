@@ -10,8 +10,10 @@ from typing import Optional
 from internal.database import extract_row, get_db, fetch_rows, fetch_row, write_row
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from pydantic import BaseModel
+
+from internal.jwt_claims import require_x_roles, require_x_user
 
 from . import database
 from .models import *
@@ -205,7 +207,13 @@ def list_user_enrollments(
     user_id: int,
     status=EnrollmentStatus.ENROLLED,
     db: sqlite3.Connection = Depends(get_db),
+    jwt_user: int = Depends(require_x_user),
+    jwt_roles: list[Role] = Depends(require_x_roles),
 ) -> ListUserEnrollmentsResponse:
+    print("user", jwt_user, "roles", jwt_roles)
+    if jwt_user != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     rows = fetch_rows(
         db,
         """
