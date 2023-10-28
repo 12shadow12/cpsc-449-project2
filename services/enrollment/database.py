@@ -74,7 +74,6 @@ def list_sections(
                     **extract_row(row, "departments"),
                 ),
             ),
-            instructor_id=row["sections.instructor_id"],
         )
         for row in rows
     ]
@@ -97,7 +96,7 @@ def list_enrollments(
     """
     p = []
     if user_section_ids is not None:
-        q += "WHERE (users.id, sections.id) IN (%s)" % ",".join(
+        q += "WHERE (enrollments.user_id, sections.id) IN (%s)" % ",".join(
             ["(?, ?)"] * len(user_section_ids)
         )
         p = [item for sublist in user_section_ids for item in sublist]  # flatten list
@@ -106,7 +105,6 @@ def list_enrollments(
     return [
         Enrollment(
             **extract_row(row, "enrollments"),
-            user_id=row["enrollments.user_id"],
             section=Section(
                 **extract_row(row, "sections"),
                 course=Course(
@@ -115,7 +113,6 @@ def list_enrollments(
                         **extract_row(row, "departments"),
                     ),
                 ),
-                instructor_id=row["sections.instructor_id"],
             ),
         )
         for row in rows
@@ -139,7 +136,7 @@ def list_waitlist(
     """
     p = []
     if user_section_ids is not None:
-        q += "WHERE (users.id, sections.id) IN (%s)" % ",".join(
+        q += "WHERE (waitlist.user_id, sections.id) IN (%s)" % ",".join(
             ["(?, ?)"] * len(user_section_ids)
         )
         p = [item for sublist in user_section_ids for item in sublist]  # flatten list
@@ -148,7 +145,6 @@ def list_waitlist(
     return [
         Waitlist(
             **extract_row(row, "waitlist"),
-            user_id=row["waitlist.user_id"],
             section=Section(
                 **extract_row(row, "sections"),
                 course=Course(
@@ -157,7 +153,6 @@ def list_waitlist(
                         **extract_row(row, "departments"),
                     ),
                 ),
-                instructor_id=row["sections.instructor_id"],
             ),
         )
         for row in rows
