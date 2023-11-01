@@ -7,6 +7,8 @@ import time
 import sqlite3
 from typing import Optional
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from internal.database import extract_row, get_db, fetch_rows, fetch_row, write_row
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRoute
@@ -19,7 +21,26 @@ from . import database
 from .models import *
 from .model_requests import *
 
+class Settings(BaseSettings, env_file=".env", extra="ignore"):
+    database: str
+    logging_config: str
+
+def get_logger():
+    return logging.getLogger(__name__)
+
+# Connect to the database and logs it
+def get_db(logger: logging.Logger = Depends(get_logger)):
+    with contextlib.closing(sqlite3.connect(SettingsConfigDict.database)) as db:
+        db.row_factory = sqlite3.Row
+        db.set_trace_callback(logger.debug)
+        yield db
+
+
+settings = Settings()
 app = FastAPI()
+
+logging.config.fileConfig(settings.logging_config, disable_existing_loggers=False)
+
 
 
 # The API should allow students to:
