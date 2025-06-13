@@ -1,4 +1,4 @@
-# BackEnd Microservice
+# Back-end Microservice
 
 ## Setting Up
 
